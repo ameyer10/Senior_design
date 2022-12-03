@@ -1,17 +1,18 @@
 # Drew Simmons
 # 10/30/21
 # Main_pb
+from typing import Union, Any
 
 import cv2
 import numpy as np
 
-capture = cv2.VideoCapture(0)  # select camera that the program will use
+capture = cv2.VideoCapture(1)  # select camera that the program will use
 
 waitTothrow = 0
 
 while True:
     isTrue, frame = capture.read()
-    lower_ir = np.array([150, 150, 150])  # setting the high and low BGR (not RGB) values
+    lower_ir = np.array([200, 200, 200])  # setting the high and low BGR (not RGB) values
     upper_ir = np.array([255, 255, 255])  # brightest pixels have highest values from 0-255
 
     mask = cv2.inRange(frame, lower_ir, upper_ir)  # creates mask
@@ -19,7 +20,9 @@ while True:
     mask = cv2.erode(mask, kernel, iterations=1)  # erodes mask with 3x3 square
     mask = cv2.dilate(mask, kernel, iterations=1)  # dilates mask with 3x3 square
 
-
+#    print(mask)
+#    print(len(mask))
+#    print(len(mask[0]))
 
     M = cv2.moments(mask)
 
@@ -29,6 +32,32 @@ while True:
     else:  # if there is not ir light in the frame don't (dividing by 0 is bad)
         avgX = 1
         avgY = 1
+
+    print(avgY)
+
+    upperArray = 0
+    lowerArray = 0
+
+    for i in range(len(mask)):
+        for j in range(len(mask[0])):
+            if mask[i][j] != 0:
+                if j < avgY:
+                    upperArray = upperArray + 1
+            if mask[i][j] != 0:
+                if j > avgY:
+                    lowerArray = lowerArray + 1
+
+    print("avgY boundary")
+    print(avgY)
+
+    print("upper array value")
+    print(upperArray)
+    print("lower array value")
+    print(lowerArray)
+
+    cv2.imshow("mask", mask)  # displays mask for testing
+
+
 
     # cv2.circle(mask, (avgX, avgY), 8, (255,0,0), -1)  # make dot and put it on the average of all the positive pixels
     cv2.line(mask, (avgX-100, avgY), (avgX+100, avgY), (255, 0, 0), 8)  # make line put it on the y average
