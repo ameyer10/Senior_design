@@ -1,0 +1,22 @@
+    #   this is the scraps of trying to iterate through the matrix
+    # upperArray = 0
+    # lowerArray = 0
+    #
+    # for i in range(len(mask)):
+    #     for j in range(len(mask[0])):
+    #         if mask[i][j] != 0:
+    #             if j < avgY:
+    #                 upperArray = upperArray + 1
+    #         if mask[i][j] != 0:
+    #             if j > avgY:
+    #                 lowerArray = lowerArray + 1
+    #
+    # print("avgY boundary")
+    # print(avgY)
+    #
+    # print("upper array value")
+    # print(upperArray)
+    # print("lower array value")
+    # print(lowerArray)
+
+#     cv2.imshow("mask", mask)  # displays mask for testing
