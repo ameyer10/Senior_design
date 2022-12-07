@@ -1,0 +1,13 @@
+
+    # if M["m01"] > 2000000000:  # using the amount of pixels in the mask we can estimate the distance
+    #     print("the target is really close")
+    #     print("///")
+    # elif M["m01"] > 100000000:
+    #     print("the target is kinda close")
+    #     print("////////")
+    # elif M["m01"] > 50000000:
+    #     print("the target is kinda far")
+    #     print("///////////////")
+    # else:
+    #     print("the targer is really far")
+    #     print("/////////////////////////")
