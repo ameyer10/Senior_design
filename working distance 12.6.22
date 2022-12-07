@@ -1,0 +1,165 @@
+# Drew Simmons
+# 10/30/21
+# Main_pb
+from typing import Union, Any
+
+import cv2
+import numpy as np
+
+capture = cv2.VideoCapture(1)  # select camera that the program will use
+
+waitTothrow = 0
+
+while True:
+    isTrue, frame = capture.read()
+    lower_ir = np.array([200, 200, 200])  # setting the high and low BGR (not RGB) values
+    upper_ir = np.array([255, 255, 255])  # brightest pixels have highest values from 0-255
+
+    mask = cv2.inRange(frame, lower_ir, upper_ir)  # creates mask
+    kernel = np.ones((3, 3), np.uint8)  # creates 3x3 square kernel for morphology
+    mask = cv2.erode(mask, kernel, iterations=1)  # erodes mask with 3x3 square
+    mask = cv2.dilate(mask, kernel, iterations=1)  # dilates mask with 3x3 square
+
+#    print(mask)
+#    print(len(mask))
+#    print(len(mask))
+
+
+    ##########################################
+    # At first Horizontal divide image #
+    ##########################################
+    # rotate image LEFT1 to 90 CLOCKWISE
+    mask = cv2.rotate(mask, cv2.ROTATE_90_CLOCKWISE)
+
+    M = cv2.moments(mask)
+    if M["m00"] > 0:  # if there is ir light in the frame take the average
+        avgX = int(M["m10"] / M["m00"])
+        avgY = int(M["m01"] / M["m00"])
+    else:  # if there is not ir light in the frame don't (dividing by 0 is bad)
+        avgX = 1
+        avgY = 1
+
+    lower = mask[:, :avgX]
+    upper = mask[:, avgX:]
+
+    # finish vertical divide image
+    # rotate image to 90 COUNTERCLOCKWISE
+    upper = cv2.rotate(upper, cv2.ROTATE_90_COUNTERCLOCKWISE)
+
+
+
+    # save
+
+    # rotate image to 90 COUNTERCLOCKWISE
+    lower = cv2.rotate(lower, cv2.ROTATE_90_COUNTERCLOCKWISE)
+    # save
+
+
+    mask = cv2.rotate(mask, cv2.ROTATE_90_COUNTERCLOCKWISE)
+
+    lower_moment = cv2.moments(lower)
+    if lower_moment["m00"] > 0:  # if there is ir light in the frame take the average
+        lower_avg = int(lower_moment["m01"] / lower_moment["m00"])
+    else:  # if there is not ir light in the frame don't (dividing by 0 is bad)
+        lower_avg = 1
+
+    upper_moment = cv2.moments(upper)
+    if upper_moment["m00"] > 0:  # if there is ir light in the frame take the average
+        upper_avg = int(upper_moment["m01"] / upper_moment["m00"])
+    else:  # if there is not ir light in the frame don't (dividing by 0 is bad)
+        upper_avg = 1
+
+    cv2.line(lower, (220, lower_avg), (420, lower_avg), (255, 0, 0), 8)  # make line put it on the y average
+    cv2.line(upper, (220, upper_avg), (420, upper_avg), (255, 0, 0), 8)  # make line put it on the y average
+
+    cv2.imshow("lower", lower)
+    cv2.imshow("upper", upper)
+
+#   print out the values
+
+    print("upper average")
+    print(upper_avg)
+
+    print('upper_max')
+    print(len(upper))
+
+
+    print("lower average")
+    print(lower_avg)
+
+
+    row_distance = (len(upper) - upper_avg) + lower_avg
+
+    print('the distance in rows')
+    print(row_distance)
+
+    # distance = 320/(row_distance*tan(23.5))
+    #
+    # print('the distance in feet is')
+    # print(distance)
+
+    #
+    # upperArray = 0
+    # lowerArray = 0
+    #
+    # for i in range(len(mask)):
+    #     for j in range(len(mask[0])):
+    #         if mask[i][j] != 0:
+    #             if j < avgY:
+    #                 upperArray = upperArray + 1
+    #         if mask[i][j] != 0:
+    #             if j > avgY:
+    #                 lowerArray = lowerArray + 1
+    #
+    # print("avgY boundary")
+    # print(avgY)
+    #
+    # print("upper array value")
+    # print(upperArray)
+    # print("lower array value")
+    # print(lowerArray)
+
+#     cv2.imshow("mask", mask)  # displays mask for testing
+
+
+
+    # cv2.circle(mask, (avgX, avgY), 8, (255,0,0), -1)  # make dot and put it on the average of all the positive pixels
+
+
+
+    cv2.imshow("mask", mask)  # displays mask for testing
+    cv2.imshow("center", frame)  # show the normal feed with dot on top
+
+    if avgX == 1:  # for when the light in not in frame
+        print("No Light detected")
+        waitTothrow = 0
+    elif avgX <= 315:  # for when the light is on the left side of the frame
+        print("turning Left")
+        waitTothrow = 0
+    elif avgX >= 335:  # for when the light is on the right side of the frame
+        print("turning Right")
+        waitTothrow = 0
+    else:  # for when the light is in the middle of the frame
+        print("its in the middle")
+        waitTothrow = waitTothrow + 1
+
+    # if M["m01"] > 2000000000:  # using the amount of pixels in the mask we can estimate the distance
+    #     print("the target is really close")
+    #     print("///")
+    # elif M["m01"] > 100000000:
+    #     print("the target is kinda close")
+    #     print("////////")
+    # elif M["m01"] > 50000000:
+    #     print("the target is kinda far")
+    #     print("///////////////")
+    # else:
+    #     print("the targer is really far")
+    #     print("/////////////////////////")
+
+    if waitTothrow == 10:  # if the light has been in the middle of the frame then throw the ball
+        print("Throw the ball!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        waitTothrow = 0
+        # break                                             # stop runing if the ball has been thrown
+
+    if cv2.waitKey(1) & 0xff == ord('q'):  # exit if q is pressed
+        break
